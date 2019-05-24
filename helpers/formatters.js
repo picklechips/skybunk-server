@@ -37,8 +37,7 @@ exports.formatTags = (tags) => {
  */
 exports.requestValidator = (requiredParams, req) => {
   for (let i = 0; i < requiredParams.length; i++) {
-    if (req[requiredParams[i]] === undefined || req[requiredParams[i]] === null)
-      return {status: 400, message: `${requiredParams[i]} field is required.`}
+    if (req[requiredParams[i]] === undefined || req[requiredParams[i]] === null) return { status: 400, message: `${requiredParams[i]} field is required.` };
   }
-  return {status: 200}
-}
+  return { status: 200 };
+};

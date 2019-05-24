@@ -211,13 +211,13 @@ router.get('/:id/poll', verifyToken, (req, res) => {
   Post.findById(req.params.id)
     .populate('author')
     .populate({
-      path: 'media',     
-      populate: { 
+      path: 'media',
+      populate: {
         path: 'poll',
         populate: {
-          path: 'usersVoted'
-        }
-      }
+          path: 'usersVoted',
+        },
+      },
     })
     .then((post) => {
       if (!post.media.poll) {
@@ -245,7 +245,7 @@ router.post('/:id/poll', verifyToken, (req, res) => {
         res.status(validation.status).json(validation.message);
         return;
       }
-      
+
       post.addMedia('poll', req.body).then((media) => {
         res.json(media.poll);
       }).catch((err) => {
@@ -262,8 +262,8 @@ router.post('/:id/poll/option', verifyToken, (req, res) => {
     .populate({
       path: 'media',
       populate: {
-        path: 'poll'
-      }
+        path: 'poll',
+      },
     })
     .then((post) => {
       if (!post.media.poll) {
@@ -278,7 +278,7 @@ router.post('/:id/poll/option', verifyToken, (req, res) => {
 
       const validation = requestValidator(['option'], req.body);
       if (validation.status !== 200) {
-        res.status(validation.status).json(validation.message)
+        res.status(validation.status).json(validation.message);
       }
 
       post.media.poll.addOption(req.body.option).then((poll) => {
@@ -299,8 +299,8 @@ router.post('/:id/poll/vote', verifyToken, (req, res) => {
     .populate({
       path: 'media',
       populate: {
-        path: 'poll'
-      }
+        path: 'poll',
+      },
     })
     .then((post) => {
       if (!post.media.poll) {
@@ -310,7 +310,7 @@ router.post('/:id/poll/vote', verifyToken, (req, res) => {
 
       const validation = requestValidator(['optionId', 'title', 'multiSelect'], req.body);
       if (validation.status !== 200) {
-        res.status(validation.status).json(validation.message)
+        res.status(validation.status).json(validation.message);
       }
 
       post.media.poll.placeVote(req.user._id, req.body.optionId).then((poll) => {
