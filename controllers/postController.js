@@ -202,4 +202,100 @@ router.get('/:id/image', verifyToken, (req, res) => {
       res.json(err);
     });
 });
+
+///////////////////////
+//      POLLS
+///////////////////////
+router.get('/:id/poll', verifyToken, (req, res) => {
+  Post.findById(req.params.id)
+    .populate('author')
+    .populate('media')
+    .populate('poll')
+    .then((post) => {
+      if (!post.media.poll) {
+        res.json(400, Error('Post does not have a poll'));
+        return;
+      }
+
+      res.json(poll);
+    })
+    .catch((err) => {
+      res.json(err);
+    });
+});
+
+router.post('/:id/poll', verifyToken, (req, res) => {
+  Post.findById(req.params.id)
+    .populate('author')
+    .then((post) => {
+      if (post.author._id !== req.user._id) {
+        res.status(403);
+      }
+
+      post.addMedia('poll', req.body).then((media) => {
+        media.populate('poll').then((response) => {
+          res.json(response);
+        })
+        .catch((err) => {
+          res.json(err);
+        });
+      }).catch((err) => {
+        res.json(err);
+      });
+    }).catch((err) => {
+      res.json(err);
+    });
+});
+
+router.post('/:id/poll/option', verifyToken, (req, res) => {
+  Post.findById(req.params.id)
+    .populate('author')
+    .populate('media')
+    .populate('poll')
+    .then((post) => {
+      if (!post.media.poll) {
+        res.json(400, Error('Post does not have a poll'));
+        return;
+      }
+
+      if (!post.media.poll.open && post.author._id !== req.user._id) {
+        res.status(403);
+        return;
+      }
+
+      poll.addOption(req.body.option).then((poll) => {
+        res.json(poll);
+      })
+        .catch((err) => {
+          res.json(err);
+        })
+    })
+    .catch((err) => {
+      res.json(err);
+    });
+});
+
+router.post('/:id/poll/vote', verifyToken, (req, res) => {
+  Post.findById(req.params.id)
+    .populate('author')
+    .populate('media')
+    .populate('poll')
+    .then((post) => {
+      if (!post.media.poll) {
+        res.json(400, Error('Post does not have a poll'));
+        return;
+      }
+
+      poll.placeVote(req.user._id, req.body.optionId).then((poll) => {
+        res.json(poll);
+      })
+        .catch((err) => {
+          res.json(err);
+        })
+    })
+    .catch((err) => {
+      res.json(err);
+    });
+});
+
 module.exports = router;
