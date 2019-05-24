@@ -11,6 +11,7 @@ require('../models/Posts');
 const Post = mongoose.model('Post');
 const { verifyToken } = require('../helpers/authorization');
 const { classifyError } = require('../helpers/formatters');
+const { requestValidator } = require('../helpers/formatters');
 
 /**
  * Methods:
@@ -239,18 +240,12 @@ router.post('/:id/poll', verifyToken, (req, res) => {
         return;
       }
 
-      if (!req.body.options) {
-        res.json(400, 'options field is required');
+      const validation = requestValidator(['options', 'title', 'multiSelect'], req.body);
+      if (validation.status !== 200) {
+        res.status(validation.status).json(validation.message);
         return;
       }
-      if (!req.body.title) {
-        res.json(400, 'title field is required');
-        return;
-      }
-      if (req.body.multiSelect === null || req.body.multiSelect === undefined) {
-        res.json(400, 'multiSelect field is required');
-        return;
-      }
+      
       post.addMedia('poll', req.body).then((media) => {
         res.json(media.poll);
       }).catch((err) => {
@@ -281,9 +276,9 @@ router.post('/:id/poll/option', verifyToken, (req, res) => {
         return;
       }
 
-      if (!req.body.option) {
-        res.json(400, 'option field is required');
-        return;
+      const validation = requestValidator(['option'], req.body);
+      if (validation.status !== 200) {
+        res.status(validation.status).json(validation.message)
       }
 
       post.media.poll.addOption(req.body.option).then((poll) => {
@@ -313,9 +308,9 @@ router.post('/:id/poll/vote', verifyToken, (req, res) => {
         return;
       }
 
-      if (!req.body.optionId) {
-        res.json(400, 'optionId field is required');
-        return;
+      const validation = requestValidator(['optionId', 'title', 'multiSelect'], req.body);
+      if (validation.status !== 200) {
+        res.status(validation.status).json(validation.message)
       }
 
       post.media.poll.placeVote(req.user._id, req.body.optionId).then((poll) => {
