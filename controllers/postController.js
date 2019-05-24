@@ -203,24 +203,30 @@ router.get('/:id/image', verifyToken, (req, res) => {
     });
 });
 
-///////////////////////
+// /////////////////////
 //      POLLS
-///////////////////////
+// /////////////////////
 router.get('/:id/poll', verifyToken, (req, res) => {
   Post.findById(req.params.id)
     .populate('author')
-    .populate('media')
-    .populate('poll')
+    .populate({
+      path: 'media',     
+      populate: { 
+        path: 'poll',
+        populate: {
+          path: 'usersVoted'
+        }
+      }
+    })
     .then((post) => {
       if (!post.media.poll) {
-        res.json(400, Error('Post does not have a poll'));
+        res.status(400).json('Post does not have a poll');
         return;
       }
-
-      res.json(poll);
+      res.json(post.media.poll);
     })
     .catch((err) => {
-      res.json(err);
+      res.status(500).json(err.toString());
     });
 });
 
@@ -228,73 +234,99 @@ router.post('/:id/poll', verifyToken, (req, res) => {
   Post.findById(req.params.id)
     .populate('author')
     .then((post) => {
-      if (post.author._id !== req.user._id) {
-        res.status(403);
+      if (post.author._id.toString() !== req.user._id.toString()) {
+        res.status(403).json({});
+        return;
       }
 
+      if (!req.body.options) {
+        res.json(400, 'options field is required');
+        return;
+      }
+      if (!req.body.title) {
+        res.json(400, 'title field is required');
+        return;
+      }
+      if (req.body.multiSelect === null || req.body.multiSelect === undefined) {
+        res.json(400, 'multiSelect field is required');
+        return;
+      }
       post.addMedia('poll', req.body).then((media) => {
-        media.populate('poll').then((response) => {
-          res.json(response);
-        })
-        .catch((err) => {
-          res.json(err);
-        });
+        res.json(media.poll);
       }).catch((err) => {
-        res.json(err);
+        res.status(500).json(err.toString());
       });
     }).catch((err) => {
-      res.json(err);
+      res.status(500).json(err.toString());
     });
 });
 
 router.post('/:id/poll/option', verifyToken, (req, res) => {
   Post.findById(req.params.id)
     .populate('author')
-    .populate('media')
-    .populate('poll')
+    .populate({
+      path: 'media',
+      populate: {
+        path: 'poll'
+      }
+    })
     .then((post) => {
       if (!post.media.poll) {
-        res.json(400, Error('Post does not have a poll'));
+        res.status(400).json('Post does not have a poll');
         return;
       }
 
-      if (!post.media.poll.open && post.author._id !== req.user._id) {
-        res.status(403);
+      if (!post.media.poll.open && post.author._id.toString() !== req.user._id.toString()) {
+        res.status(403).json({});
         return;
       }
 
-      poll.addOption(req.body.option).then((poll) => {
+      if (!req.body.option) {
+        res.json(400, 'option field is required');
+        return;
+      }
+
+      post.media.poll.addOption(req.body.option).then((poll) => {
         res.json(poll);
       })
         .catch((err) => {
-          res.json(err);
-        })
+          res.status(500).json(err.toString());
+        });
     })
     .catch((err) => {
-      res.json(err);
+      res.status(500).json(err.toString());
     });
 });
 
 router.post('/:id/poll/vote', verifyToken, (req, res) => {
   Post.findById(req.params.id)
     .populate('author')
-    .populate('media')
-    .populate('poll')
+    .populate({
+      path: 'media',
+      populate: {
+        path: 'poll'
+      }
+    })
     .then((post) => {
       if (!post.media.poll) {
-        res.json(400, Error('Post does not have a poll'));
+        res.json(404, 'Post does not have a poll');
         return;
       }
 
-      poll.placeVote(req.user._id, req.body.optionId).then((poll) => {
+      if (!req.body.optionId) {
+        res.json(400, 'optionId field is required');
+        return;
+      }
+
+      post.media.poll.placeVote(req.user._id, req.body.optionId).then((poll) => {
         res.json(poll);
       })
         .catch((err) => {
-          res.json(err);
-        })
+          res.status(500).json(err.Sring());
+        });
     })
     .catch((err) => {
-      res.json(err);
+      res.status(500).json(err.toString());
     });
 });
 
