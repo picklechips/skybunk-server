@@ -101,7 +101,8 @@ PollSchema.methods.placeVote = function (userId, optionId) {
   return new Promise((resolve, reject) => {
     const option = this.options.id(optionId);
     if (!option) {
-      reject(Error('Option not found'))
+      reject(Error('Option not found'));
+      return;
     }
 
     if (option.usersVoted.some((u) => u.toString() == userId.toString())) {
@@ -127,7 +128,8 @@ PollSchema.methods.retractVote = function (userId, optionId) {
   return new Promise((resolve, reject) => {
     const option = this.options.id(optionId);
     if (!option) {
-      reject(Error('Option not found'))
+      reject(Error('Option not found'));
+      return;
     }
 
     option.set({
