@@ -99,7 +99,11 @@ PollSchema.methods.addOption = function (option) {
 PollSchema.methods.placeVote = function (userId, optionId) {
   return new Promise((resolve, reject) => {
     const option = this.options.id(optionId);
-    if (option.usersVoted.includes(userId)) {
+    if (!option) {
+      reject(Error('Option not found'))
+    }
+
+    if (option.usersVoted.includes(userId/)) {
       reject(Error('User has already voted for this option'));
     }
 
@@ -120,6 +124,9 @@ PollSchema.methods.placeVote = function (userId, optionId) {
 PollSchema.methods.retractVote = function (userId, optionId) {
   return new Promise((resolve, reject) => {
     const option = this.options.id(optionId);
+    if (!option) {
+      reject(Error('Option not found'))
+    }
 
     option.set({
       text: option.text,

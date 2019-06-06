@@ -308,17 +308,26 @@ router.post('/:id/poll/vote', verifyToken, (req, res) => {
         return;
       }
 
-      const validation = requestValidator(['optionId', 'title', 'multiSelect'], req.body);
+      const validation = requestValidator(['optionId'], req.body);
       if (validation.status !== 200) {
         res.status(validation.status).json(validation.message);
       }
 
-      post.media.poll.placeVote(req.user._id, req.body.optionId).then((poll) => {
-        res.json(poll);
-      })
-        .catch((err) => {
-          res.status(500).json(err.Sring());
-        });
+      if (req.body.retract) {
+        post.media.poll.retractVote(req.user._id, req.body.optionId).then((poll) => {
+          res.json(poll);
+        })
+          .catch((err) => {
+            res.status(500).json(err.toString());
+          }); 
+      } else {
+        post.media.poll.placeVote(req.user._id, req.body.optionId).then((poll) => {
+          res.json(poll);
+        })
+          .catch((err) => {
+            res.status(500).json(err.toString());
+          });
+      }
     })
     .catch((err) => {
       res.status(500).json(err.toString());
