@@ -246,7 +246,7 @@ router.post('/:id/poll', verifyToken, (req, res) => {
         return;
       }
 
-      post.addMedia('poll', {...req.body, userID: req.user._id}).then((media) => {
+      post.addMedia('poll', { ...req.body, userID: req.user._id }).then((media) => {
         res.json(media.poll);
       }).catch((err) => {
         res.status(500).json(err.toString());
