@@ -246,7 +246,7 @@ router.post('/:id/poll', verifyToken, (req, res) => {
         return;
       }
 
-      post.addMedia('poll', req.body).then((media) => {
+      post.addMedia('poll', {...req.body, userID: req.user._id}).then((media) => {
         res.json(media.poll);
       }).catch((err) => {
         res.status(500).json(err.toString());
@@ -281,7 +281,7 @@ router.post('/:id/poll/option', verifyToken, (req, res) => {
         res.status(validation.status).json(validation.message);
       }
 
-      post.media.poll.addOption(req.body.option).then((poll) => {
+      post.media.poll.addOption(req.body.option, req.user._id).then((poll) => {
         res.json(poll);
       })
         .catch((err) => {
